@@ -116,51 +116,20 @@ class GPS:
         # Send the UBX-CFG-RATE message
         self.gps.send_message(sp.CFG_CLS, ubx_id, ubx_payload)
 
-        self.queue = Queue()
+        self.queue:Queue = Queue() # FIFO Queue
         self.running = False
 
         self.geo:object = None
+
         # Dry run
-        while True:
-            try:
-                self.update_gps()
-                if self.get_gps_data():
-                    break
-            except Exception as e:
-                print(e)
+        self.update_gps()
+        _ = self.get_gps_data()
 
     def start(self):
         self.process = Process(target=self._run, args=())
         self.running = True 
         self.process.start()
     
-    def stop(self):
-        self.running = False
-        self.process.kill()
-
-    def update_gps(self):
-        geo = self.gps.geo_coords()
-        if 0:
-            print("UTC Time {}:{}:{}".format(geo.hour, geo.min,geo.sec))
-            print("Longitude: ", geo.lon) 
-            print("Latitude: ", geo.lat)
-            print("Heading of Motion: ", geo.headMot)
-
-        geo_dict = {
-                    "year":geo.year,
-                    "month":geo.month,
-                    "day":geo.day,
-                    "hour":geo.hour,
-                    "min":geo.min,
-                    "sec":geo.sec,
-                    "lon":geo.lon,
-                    "lat":geo.lat,
-                    "height": geo.height,
-                    "headMot":geo.headMot,
-        }
-        self.queue.put(ObjectFromDict(**geo_dict))
-        # time.sleep(0.1)
-
     def _run(self):
         if self.gps == None:
             print("GPS module not detected. Verify the connection.")
@@ -168,26 +137,65 @@ class GPS:
 
         while self.running:
             self.update_gps()
+            time.sleep(0.01)
+
+    def update_gps(self):
+        try:
+            geo_response = self.gps.geo_coords()
+        except Exception as e:
+            print(e)
+            geo_response = None
+
+        if geo_response:
+            if 0:
+                print("UTC Time {}:{}:{}".format(geo_response.hour, geo_response.min,geo_response.sec))
+                print("Longitude: ", geo_response.lon) 
+                print("Latitude: ", geo_response.lat)
+                print("Heading of Motion: ", geo_response.headMot)
+
+            geo_dict = {
+                        "year":geo_response.year,
+                        "month":geo_response.month,
+                        "day":geo_response.day,
+                        "hour":geo_response.hour,
+                        "min":geo_response.min,
+                        "sec":geo_response.sec,
+                        "nano":geo_response.nano,
+                        "lon":geo_response.lon,
+                        "lat":geo_response.lat,
+                        "height": geo_response.height,
+                        "headMot":geo_response.headMot,
+            }
+
+            self.queue.put(ObjectFromDict(**geo_dict))
 
     def get_gps_data(self):
-        #@TODO: Add EKF here
-        if not self.queue.empty():
-            # Update
+        #@TODO: Add EKF here. Aggrgate all the previous GPS data points
+
+        # Get all gps points from the queue
+        while not self.queue.empty():
+            # print(self.queue.qsize())
             self.geo = self.queue.get()
+            # print("UTC Time {}:{}:{}".format(self.geo.hour, self.geo.min,self.geo.sec))
 
         return self.geo
     
+    def stop(self):
+        self.running = False
+        self.process.kill()
 
 if __name__ == "__main__":
     gps = GPS()
     gps.start()
     try: 
         while True:
+            time.sleep(1.0)
             gps_data = gps.get_gps_data()
-            if gps_data is not None:
-                print("UTC Time {}:{}:{}".format(gps_data.hour, gps_data.min,gps_data.sec))
-                print("Longitude: ", gps_data.lon) 
-                print("Latitude: ", gps_data.lat)
-                print("Heading of Motion: ", gps_data.headMot)
+            if 1:
+                if gps_data is not None:
+                    print("UTC Time {}:{}:{}".format(gps_data.hour, gps_data.min,gps_data.sec))
+                    print("Longitude: ", gps_data.lon) 
+                    print("Latitude: ", gps_data.lat)
+                    print("Heading of Motion: ", gps_data.headMot)
     except KeyboardInterrupt:
         gps.stop()

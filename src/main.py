@@ -76,15 +76,15 @@ class SprayApp(App):
 
             # Get GPS data
             geo = self.gps.get_gps_data()
+            if geo:
+                # Update Map
+                mapview = self.root.ids["mapview"]
+                mapview.center_on(geo.lat, geo.lon)
+                mapview_marker = self.root.ids["mapview_marker"]
 
-            # Update Map
-            mapview = self.root.ids["mapview"]
-            mapview.center_on(geo.lat, geo.lon)
-            mapview_marker = self.root.ids["mapview_marker"]
-
-            # Moving test
-            mapview_marker.lat = geo.lat
-            mapview_marker.lon = geo.lon
+                # Moving test
+                mapview_marker.lat = geo.lat
+                mapview_marker.lon = geo.lon
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="template-app")
