@@ -5,6 +5,7 @@ import os
 from typing import List
 
 from robo_spray import ops
+from robo_spray.gps import GPS
 
 # import internal libs
 
@@ -35,6 +36,8 @@ class SprayApp(App):
 
         self.async_tasks: List[asyncio.Task] = []
 
+        self.gps = GPS()
+
     def build(self):
         return Builder.load_file("res/main.kv")
 
@@ -53,6 +56,7 @@ class SprayApp(App):
         # Placeholder task
         self.async_tasks.append(asyncio.ensure_future(self.template_function()))
         
+        self.gps.start()
         return await asyncio.gather(run_wrapper(), *self.async_tasks)
 
     async def template_function(self) -> None:
@@ -69,13 +73,17 @@ class SprayApp(App):
                 f"{'Tic' if self.counter % 2 == 0 else 'Tac'}: {self.counter}"
             )
 
+            # Get GPS data
+            geo = self.gps.get_gps_data()
+
             # Update Map
             mapview = self.root.ids["mapview"]
-            mapview.center_on(mapview.lat, mapview.lon)
+            mapview.center_on(geo.lat, geo.lon)
             mapview_marker = self.root.ids["mapview_marker"]
 
             # Moving test
-            mapview_marker.lat = mapview_marker.lat + 0.00001
+            mapview_marker.lat = geo.lat
+            mapview_marker.lon = geo.lon
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="template-app")
