@@ -25,7 +25,7 @@ Config.set("kivy", "keyboard_mode", "systemanddock")
 from kivy.app import App  # noqa: E402
 from kivy.lang.builder import Builder  # noqa: E402
 
-class TemplateApp(App):
+class SprayApp(App):
     """Base class for the main Kivy app."""
 
     def __init__(self) -> None:
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     loop = asyncio.get_event_loop()
     try:
-        loop.run_until_complete(TemplateApp().app_func())
+        loop.run_until_complete(SprayApp().app_func())
     except asyncio.CancelledError:
         pass
     loop.close()
