@@ -43,6 +43,7 @@ class SprayApp(App):
 
     def on_exit_btn(self) -> None:
         """Kills the running kivy application."""
+        self.gps.stop()
         App.get_running_app().stop()
 
     async def app_func(self):
