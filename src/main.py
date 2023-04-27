@@ -4,7 +4,7 @@ import asyncio
 import os
 from typing import List
 
-from amiga_package import ops
+from robo_spray import ops
 
 # import internal libs
 
@@ -24,7 +24,6 @@ Config.set("kivy", "keyboard_mode", "systemanddock")
 # kivy imports
 from kivy.app import App  # noqa: E402
 from kivy.lang.builder import Builder  # noqa: E402
-
 
 class TemplateApp(App):
     """Base class for the main Kivy app."""
@@ -53,7 +52,7 @@ class TemplateApp(App):
 
         # Placeholder task
         self.async_tasks.append(asyncio.ensure_future(self.template_function()))
-
+        
         return await asyncio.gather(run_wrapper(), *self.async_tasks)
 
     async def template_function(self) -> None:
@@ -70,6 +69,13 @@ class TemplateApp(App):
                 f"{'Tic' if self.counter % 2 == 0 else 'Tac'}: {self.counter}"
             )
 
+            # Update Map
+            mapview = self.root.ids["mapview"]
+            mapview.center_on(mapview.lat, mapview.lon)
+            mapview_marker = self.root.ids["mapview_marker"]
+
+            # Moving test
+            mapview_marker.lat = mapview_marker.lat + 0.00001
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="template-app")

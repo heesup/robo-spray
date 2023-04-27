@@ -130,3 +130,6 @@ dmypy.json
 
 # setup.cfg created
 *.md5sum
+
+# Map cache folder
+cache
