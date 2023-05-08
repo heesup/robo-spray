@@ -107,14 +107,20 @@ class ObjectFromDict:
 
 class GPS:
     def __init__(self):
-        self.gps_port = serial.Serial('/dev/ttyACM0', baudrate=38400, timeout=1)
-        self.gps = UbloxGps(self.gps_port)
+        try:
+            self.gps_port = serial.Serial('/dev/ttyACM0', baudrate=38400, timeout=1)
+            self.gps = UbloxGps(self.gps_port)
+        except Exception as e:
+            print(e)
+            self.gps_port = None
+            self.gps = None
 
-        # Setup samping rate
-        ubx_id = 0x08
-        ubx_payload = struct.pack("<HHH", 300, 1, 0)
-        # Send the UBX-CFG-RATE message
-        self.gps.send_message(sp.CFG_CLS, ubx_id, ubx_payload)
+        if self.gps:
+            # Setup samping rate
+            ubx_id = 0x08
+            ubx_payload = struct.pack("<HHH", 300, 1, 0)
+            # Send the UBX-CFG-RATE message
+            self.gps.send_message(sp.CFG_CLS, ubx_id, ubx_payload)
 
         self.queue:Queue = Queue() # FIFO Queue
         self.running = False
