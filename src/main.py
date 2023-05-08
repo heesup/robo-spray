@@ -57,7 +57,7 @@ class SprayApp(App):
 
         self.gps = GPS()
 
-        self.geojson_layer = GeoJsonMapLayer(source="src/assets/campus_food.json")        
+        self.geojson_layer = GeoJsonMapLayer(source="/data/home/amiga/apps/robo-spray/src/assets/campus_food.json")        
         
         self.activate = 0
 
@@ -246,7 +246,7 @@ class SprayApp(App):
 
         #joystick: VirtualJoystickWidget = self.root.ids["joystick"]
         while True:
-            print(f"self.activate:{self.activate}")
+            # print(f"self.activate:{self.activate}")
             msg: canbus_pb2.RawCanbusMessage = make_amiga_spray1_proto(
                 state_req=AmigaControlState.STATE_AUTO_ACTIVE,
                 activate=self.activate,

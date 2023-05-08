@@ -15,7 +15,7 @@ class AmigaSpray1(Packet):
     New in fw v0.1.9 / farm-ng-amiga v0.0.7: Add pto & hbridge control. Message data is now 8 bytes (was 5).
     """
 
-    cob_id = 0x300
+    cob_id = 0x123
 
     def __init__(
         self,
@@ -39,20 +39,8 @@ class AmigaSpray1(Packet):
 
     def decode(self, data):
         """Decodes CAN message data and populates the values of the class."""
-        if len(data) == 5:
-            # TODO: Instate warning when dashboard fw v0.1.9 is released
-            # warnings.warn(
-            #     "Please update dashboard firmware to >= v0.1.9."
-            #     " New AmigaTpdo1 packets include more data. Support will be removed in farm_ng_amiga v0.0.9",
-            #     stacklevel=2,
-            # )
-            (self.state_req, cmd_speed, cmd_ang_rate) = unpack(self.legacy_format, data)
-            self.cmd_speed = cmd_speed / 1000.0
-            self.cmd_ang_rate = cmd_ang_rate / 1000.0
-        else:
-            (self.state_req, cmd_speed, cmd_ang_rate, self.pto_bits, self.hbridge_bits) = unpack(self.format, data)
-            self.cmd_speed = cmd_speed / 1000.0
-            self.cmd_ang_rate = cmd_ang_rate / 1000.0
+        (self.state_req, activate, _) = unpack(self.format, data)
+        self.activate = activate
 
     def __str__(self):
         return "AMIGA Spray Request state {} activate {}".format(
@@ -79,7 +67,8 @@ def make_amiga_spray1_proto(
     """
     # TODO: add some checkers, or make python CHECK_API
     return canbus_pb2.RawCanbusMessage(
-        id=AmigaSpray1.cob_id + DASHBOARD_NODE_ID,
+        #id=AmigaSpray1.cob_id + DASHBOARD_NODE_ID,
+        id=0x777,
         data=AmigaSpray1(
             state_req=state_req,
             activate=activate,
