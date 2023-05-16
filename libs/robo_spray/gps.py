@@ -8,6 +8,9 @@ import piexif
 #import cv2
 from fractions import Fraction
 
+import datetime
+import json
+
 def convert_to_dms(degrees):
     """
     Convert decimal degrees to degrees, minutes, and seconds format.
@@ -106,7 +109,7 @@ class ObjectFromDict:
         self.__dict__.update(entries)
 
 class GPS:
-    def __init__(self):
+    def __init__(self,update_ms=300,simulation=False):
         try:
             self.gps_port = serial.Serial('/dev/ttyACM0', baudrate=38400, timeout=1)
             self.gps = UbloxGps(self.gps_port)
@@ -118,10 +121,11 @@ class GPS:
         if self.gps:
             # Setup samping rate
             ubx_id = 0x08
-            ubx_payload = struct.pack("<HHH", 300, 1, 0)
+            ubx_payload = struct.pack("<HHH", update_ms, 1, 0)
             # Send the UBX-CFG-RATE message
             self.gps.send_message(sp.CFG_CLS, ubx_id, ubx_payload)
 
+        self.simulation = simulation
         self.queue:Queue = Queue() # FIFO Queue
         self.running = False
 
@@ -137,9 +141,54 @@ class GPS:
         self.process.start()
     
     def _run(self):
-        if self.gps == None:
+        if self.gps == None or self.simulation:
             print("GPS module not detected. Verify the connection.")
-            return
+            print("Running GPS simulation mode")
+            
+            # Runing GPS Simulation
+            with open('src/assets/spray_position_all.json') as file:
+                data = json.load(file)
+                    # Add markers to the MapView 
+            sorted_features = sorted(data['features'], key=lambda feature: feature['properties']['name'])
+
+            sorted_data = {
+                'type': 'FeatureCollection',
+                'features': sorted_features
+            }
+
+            gps_data_len = len(sorted_data['features'])
+            idx = 0
+            while self.running:
+                # Get the current time
+                current_time = datetime.datetime.now()
+                coordinates = sorted_data['features'][idx]['geometry']['coordinates']
+                geo_dict = {
+                            "year":current_time.year,
+                            "month":current_time.month,
+                            "day":current_time.day,
+                            "hour":current_time.hour,
+                            "min":current_time.min,
+                            "sec":current_time.second,
+                            "nano":current_time.microsecond*1000,
+                            "lon":coordinates[0],
+                            "lat":coordinates[1],
+                            "height": 0,
+                            "headMot":0,
+                } 
+
+
+                try:
+                    self.queue.put(ObjectFromDict(**geo_dict),timeout=0)
+                except Exception as e:
+                    print("GPS queue is full")
+                    print(e)
+
+                idx += 1
+                # Reset
+                if idx == gps_data_len:
+                    print("Reset idx")
+                    idx = 0
+                time.sleep(0.10)
 
         while self.running:
             self.update_gps()
@@ -173,16 +222,21 @@ class GPS:
                         "headMot":geo_response.headMot,
             }
 
-            self.queue.put(ObjectFromDict(**geo_dict))
+            try:
+                self.queue.put(ObjectFromDict(**geo_dict),timeout=0)
+            except Exception as e:
+                print("GPS queue is full")
+                print(e)
 
     def get_gps_data(self):
         #@TODO: Add EKF here. Aggrgate all the previous GPS data points
-
+        
         # Get all gps points from the queue
         while not self.queue.empty():
             # print(self.queue.qsize())
             self.geo = self.queue.get()
             # print("UTC Time {}:{}:{}".format(self.geo.hour, self.geo.min,self.geo.sec))
+
 
         return self.geo
     

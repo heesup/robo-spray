@@ -1,0 +1,21 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+    { "type": "Feature", "properties": { "altitude": 0.0, "name": "usb_2023_04_24_14_15_14_747.jpg" }, "geometry": { "type": "Point", "coordinates": [ -121.7520472, 38.5323438 ] } },
+  
+    { "type": "Feature", "properties": { "altitude": 0.0, "name": "usb_2023_04_24_14_17_32_928.jpg" }, "geometry": { "type": "Point", "coordinates": [ -121.7520929, 38.5322946 ] } },
+
+    { "type": "Feature", "properties": { "altitude": 0.0, "name": "usb_2023_04_24_14_18_31_185.jpg" }, "geometry": { "type": "Point", "coordinates": [ -121.7521443, 38.532253 ] } },
+
+    { "type": "Feature", "properties": { "altitude": 0.0, "name": "usb_2023_04_24_14_17_04_348.jpg" }, "geometry": { "type": "Point", "coordinates": [ -121.7519641, 38.5323434 ] } },
+
+    { "type": "Feature", "properties": { "altitude": 0.0, "name": "usb_2023_04_24_14_18_29_607.jpg" }, "geometry": { "type": "Point", "coordinates": [ -121.7521542, 38.5322497 ] } },
+
+    { "type": "Feature", "properties": { "altitude": 0.0, "name": "usb_2023_04_24_14_14_53_780.jpg" }, "geometry": { "type": "Point", "coordinates": [ -121.7519899, 38.5323609 ] } },
+
+    { "type": "Feature", "properties": { "altitude": 0.0, "name": "usb_2023_04_24_14_16_03_895.jpg" }, "geometry": { "type": "Point", "coordinates": [ -121.7522482, 38.5322566 ] } },
+
+    { "type": "Feature", "properties": { "altitude": 0.0, "name": "usb_2023_04_24_14_18_11_750.jpg" }, "geometry": { "type": "Point", "coordinates": [ -121.7522448, 38.5322235 ] } }
+    ]
+    }
+    

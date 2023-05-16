@@ -2,48 +2,70 @@
 #:import MapSource kivy_garden.mapview.MapSource
 RelativeLayout:
     BoxLayout:
-        orientation: 'horizontal'
+        orientation: 'vertical'
 
-        Button:
-            id: back_btn_layout
-            pos_hint: {"x": 0.0, "top": 1.0}
-            background_color: 0, 0, 0, 0
-            size_hint: 0.1, 0.1
-            background_normal: "assets/back_button.png"
-            on_release: app.on_exit_btn()
-            Image:
-                source: "assets/back_button_normal.png" if self.parent.state == "normal" else "assets/back_button_down.png"
-                pos: self.parent.pos
-                size: self.parent.size
+        MapView:
+            id: mapview
+            size_hint_y: 0.8
+            lat: 38.532361
+            lon: -121.7519897
+            zoom: 20
+            double_tap_zoom:False
+            map_source: MapSource(sys.argv[1], attribution="") if len(sys.argv) > 1 else "osm"
+            MapMarkerPopup:
+                id: mapview_marker
+                lat: 38.532361
+                lon: -121.7519897
+                # source: "src/assets/custom_marker.png"
+                # size: 100,100
+                popup_size: dp(230), dp(130)
+                Button:
+                    on_release: 
+                        print("Hey")
 
-        Button:
-            id: spary_btn_layout
-            pos_hint: {"x": 0.0, "top": 1.0}
-            background_color: 0, 0, 0, 0
-            size_hint: 0.1, 0.1
-            text: "Spray"
-            # background_normal: "assets/button.webp"
-            on_press: app.on_spray_btn()
-            on_release: app.off_spray_btn()
-            Image:
-                source: "assets/spray_button_normal.webp" if self.parent.state == "normal" else "assets/spray_button_normal_down.png"
-                pos: self.parent.pos
-                size: self.parent.size
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: 0.2
+            Button:
+                id: back_btn_layout
+                pos_hint: {"x": 0.0, "top": 1.0}
+                background_color: 0, 0, 0, 0
+                # size_hint: 0.1, 0.1
+                background_normal: "assets/back_button.png"
+                on_release: app.on_exit_btn()
+                Image:
+                    source: "assets/back_button_normal.png" if self.parent.state == "normal" else "assets/back_button_down.png"
+                    pos: self.parent.pos
+                    size: self.parent.size
 
+            Button:
+                id: spary_btn_layout
+                pos_hint: {"x": 0.0, "top": 1.0}
+                background_color: 0, 0, 0, 0
+                # size_hint: 0.1, 0.1
+                text: "Spray"
+                # background_normal: "assets/button.webp"
+                on_press: app.on_spray_btn()
+                on_release: app.off_spray_btn()
+                Image:
+                    source: "assets/spray_button_normal.webp" if self.parent.state == "normal" else "assets/spray_button_normal_down.png"
+                    pos: self.parent.pos
+                    size: self.parent.size
+
+            ToggleButton:
+                id: auto_spary_btn_layout
+                pos_hint: {"x": 0.0, "top": 1.0}
+                background_color: 0, 0, 0, 0
+                # size_hint: 0.1, 0.1
+                on_press: app.auto_spray_btn()
+                on_release: app.off_spray_btn()
+                Image:
+                    source: "assets/off_switch.png" if self.parent.state == "normal" else "assets/on_switch.png"
+                    pos: self.parent.pos
+                    size: self.parent.size
         # Label:
         #     id: counter_label
         #     text: "Tic: 0"
         #     font_size: 40
 
 
-        MapView:
-            id: mapview
-            lat: 38.532361
-            lon: -121.7519897
-            zoom: 20
-            map_source: MapSource(sys.argv[1], attribution="") if len(sys.argv) > 1 else "osm"
-            MapMarkerPopup:
-                id: mapview_marker
-                lat: 38.532361
-                lon: -121.7519897
-                popup_size: dp(230), dp(130)

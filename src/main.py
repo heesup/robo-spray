@@ -4,6 +4,8 @@ import asyncio
 import os
 from typing import List
 from typing import Optional
+import json
+
 # import farm_ng libs
 import grpc
 from farm_ng.canbus import canbus_pb2
@@ -18,11 +20,10 @@ from farm_ng.service import service_pb2
 from farm_ng.service.service_client import ClientConfig
 
 # import internal libs
-from robo_spray import ops
 from robo_spray.gps import GPS
-from robo_spray.map import create_marker
 from robo_spray.can import make_amiga_spray1_proto
-
+from robo_spray.map import draw_markers,draw_tracks
+from robo_spray.auto_spray import build_kd_tree, match_gps_position
 
 
 # Must come before kivy imports
@@ -35,7 +36,7 @@ Config.set("graphics", "resizable", False)
 Config.set("graphics", "width", "1280")
 Config.set("graphics", "height", "800")
 Config.set("graphics", "fullscreen", "false")
-Config.set("input", "mouse", "mouse,disable_on_activity")
+Config.set("input", "mouse", "mouse,disable_on_activity, disable_multitouch")
 Config.set("kivy", "keyboard_mode", "systemanddock")
 
 # kivy imports
@@ -43,6 +44,7 @@ from kivy.app import App  # noqa: E402
 from kivy.lang.builder import Builder  # noqa: E402
 from kivy_garden.mapview.geojson import GeoJsonMapLayer
 from kivy_garden.mapview import MapMarker, MapView
+from kivy.uix.button import Button
 
 class SprayApp(App):
     """Base class for the main Kivy app."""
@@ -56,10 +58,17 @@ class SprayApp(App):
         self.async_tasks: List[asyncio.Task] = []
 
         self.gps = GPS()
+        self.geo:any = None
 
-        self.geojson_layer = GeoJsonMapLayer(source="/data/home/amiga/apps/robo-spray/src/assets/campus_food.json")        
-        
         self.activate = 0
+        self.auto_spray_activate:bool = False
+
+        with open('src/assets/spray_position_points.json') as file:
+            self.spary_pos = json.load(file)
+
+        with open('src/assets/spray_position_all.json') as file:
+            self.spary_track = json.load(file)
+                
 
     def build(self):
         return Builder.load_file("res/main.kv")
@@ -75,6 +84,21 @@ class SprayApp(App):
         # Send Can signal
         self.activate = 0
         print("off")
+
+    def auto_spray_btn(self) -> None:
+        """Activates the auto spray """
+        btn:Button = self.root.ids["auto_spary_btn_layout"]
+        print(btn.state)
+        if self.auto_spray_activate == False:
+            print("Auto spray On")
+            self.auto_spray_activate = True
+        else:
+            print("Auto spray Off")
+            self.auto_spray_activate = False
+            
+        
+
+        
 
 
     def on_exit_btn(self) -> None:
@@ -92,7 +116,10 @@ class SprayApp(App):
 
 
         # Placeholder task
-        self.async_tasks.append(asyncio.ensure_future(self.template_function()))
+        self.async_tasks.append(asyncio.ensure_future(self.update_gps_function()))
+        self.async_tasks.append(asyncio.ensure_future(self.display_map_function()))
+        self.async_tasks.append(asyncio.ensure_future(self.auto_spray()))
+
         
         # configure the canbus client
         canbus_config: ClientConfig = ClientConfig(
@@ -113,35 +140,64 @@ class SprayApp(App):
 
         return await asyncio.gather(run_wrapper(), *self.async_tasks)
 
-    async def template_function(self) -> None:
+    async def update_gps_function(self) -> None:
         """Placeholder forever loop."""
         while self.root is None:
             await asyncio.sleep(0.01)
 
-        self.mapview:MapMarker = self.root.ids["mapview"]
-        self.mapview.add_layer(self.geojson_layer)
-        
-        # self.geojson_layer.traverse_feature(create_marker)
-        
         while True:
-            await asyncio.sleep(1.0)
-            if 0:
-                # increment the counter using internal libs and update the gui
-                self.counter = ops.add(self.counter, 1)
-                self.root.ids.counter_label.text = (
-                    f"{'Tic' if self.counter % 2 == 0 else 'Tac'}: {self.counter}"
-                )
-
             # Get GPS data
-            geo = self.gps.get_gps_data()
-            if geo:
+            self.geo = self.gps.get_gps_data()
+            await asyncio.sleep(0.3)
+
+    async def display_map_function(self) -> None:
+        """Placeholder forever loop."""
+        while self.root is None:
+            await asyncio.sleep(0.01)
+
+        self.mapview:MapView = self.root.ids["mapview"]
+
+        # draw_tracks(mapview=self.mapview,data=self.spary_track)
+        draw_markers(mapview=self.mapview,data=self.spary_pos)
+
+
+        while True:
+            
+            if self.geo:
                 # Update Map
-                self.mapview.center_on(geo.lat, geo.lon)
+                self.mapview.center_on(self.geo.lat, self.geo.lon)
                 mapview_marker = self.root.ids["mapview_marker"]
 
                 # Moving test
-                mapview_marker.lat = geo.lat
-                mapview_marker.lon = geo.lon
+                mapview_marker.lat = self.geo.lat
+                mapview_marker.lon = self.geo.lon
+
+            await asyncio.sleep(1.0)
+
+    async def auto_spray(self) -> None:
+        """Placeholder forever loop."""
+        while self.root is None:
+            await asyncio.sleep(0.01)
+
+        while True:
+            
+            while self.auto_spray_activate:
+                gps_position = (self.geo.lon,self.geo.lat)
+
+                # Build KD-Tree
+                kdtree = build_kd_tree(self.spary_pos)
+
+                # Match GPS position to GeoJSON feature
+                matched_feature = match_gps_position(gps_position, kdtree, self.spary_pos)
+
+                # Access matched feature properties
+                name = matched_feature['properties']['name']
+                # You can access other properties based on your GeoJSON structure
+
+                print(f'Matched feature name: {name}')
+                await asyncio.sleep(0.3)
+
+            await asyncio.sleep(0.1)
 
 
     async def stream_canbus(self, client: CanbusClient) -> None:
@@ -168,7 +224,7 @@ class SprayApp(App):
                     response_stream.cancel()
                     response_stream = None
 
-                print("Canbus service is not streaming or ready to stream")
+                # print("Canbus service is not streaming or ready to stream")
                 await asyncio.sleep(0.1)
                 continue
 
@@ -218,7 +274,7 @@ class SprayApp(App):
                 if response_stream is not None:
                     response_stream.cancel()
                     response_stream = None
-                print("Waiting for running canbus service...")
+                # print("Waiting for running canbus service...")
                 await asyncio.sleep(0.1)
                 continue
 
@@ -246,7 +302,7 @@ class SprayApp(App):
 
         #joystick: VirtualJoystickWidget = self.root.ids["joystick"]
         while True:
-            # print(f"self.activate:{self.activate}")
+            print(f"self.activate:{self.activate}")
             msg: canbus_pb2.RawCanbusMessage = make_amiga_spray1_proto(
                 state_req=AmigaControlState.STATE_AUTO_ACTIVE,
                 activate=self.activate,

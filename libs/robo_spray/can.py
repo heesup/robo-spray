@@ -5,10 +5,9 @@ from struct import pack,unpack
 from farm_ng.canbus.packet import AmigaControlState, Packet, DASHBOARD_NODE_ID
 from farm_ng.canbus import canbus_pb2
 
-from farm_ng.canbus.packet import AmigaRpdo1 # reference
+from farm_ng.canbus.packet import AmigaRpdo1 # for reference
 
 #@TODO: Fix and add more decsription
-
 class AmigaSpray1(Packet):
     """State, speed, and angular rate command (request) sent to the Amiga vehicle control unit (VCU).
 
@@ -23,7 +22,7 @@ class AmigaSpray1(Packet):
         activate: int = 0,
     ):
         self.format = "<Bh" # little-endian [unsigned char, short]
-        self.legacy_format = "<Bhh"
+        self.format = "<Bhx" # little-endian [unsigned char, short]
 
         self.state_req = state_req
         self.activate = activate
@@ -43,9 +42,7 @@ class AmigaSpray1(Packet):
         self.activate = activate
 
     def __str__(self):
-        return "AMIGA Spray Request state {} activate {}".format(
-            self.state_req, self.activate
-        )
+        return f"AMIGA Spray Request state {self.state_req} activate {self.activate}"
 
 
 
@@ -54,13 +51,12 @@ def make_amiga_spray1_proto(
 ) -> canbus_pb2.RawCanbusMessage:
     """Creates a canbus_pb2.RawCanbusMessage.
 
-    Uses the AmigaRpdo1 structure and formatting, that can be sent
+    Uses the spray1 structure and formatting, that can be sent
     directly to the canbus service to be formatted and send on the CAN bus.
 
     Args:
         state_req: State of the Amiga vehicle control unit (VCU).
-        cmd_speed: Command speed in meters per second.
-        cmd_ang_rate: Command angular rate in radians per second.
+        activate: Command spray activation.
 
     Returns:
         An instance of a canbus_pb2.RawCanbusMessage.
