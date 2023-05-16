@@ -23,6 +23,21 @@ class SparyMapMarker(MapMarker):
             Color(0, 1, 0)  # Set the color of the marker
             Ellipse(pos=(self.x - self.size[0] / 2, self.y - self.size[1] / 2), size=self.size)
 
+class CircleMarker(MapMarker):
+    def __init__(self, lat, lon, radius, **kwargs):
+        super(CircleMarker, self).__init__(lat=lat, lon=lon, **kwargs)
+        self.radius = radius
+
+    def add_canvas(self):
+        with self.canvas:
+            Color(*self.color)
+            self.ellipse = Ellipse(pos=self.pos, size=(self.radius * 2, self.radius * 2))
+
+    def update_canvas(self):
+        self.ellipse.pos = self.pos
+        self.ellipse.size = (self.radius * 2, self.radius * 2)
+
+
 def marker_function():
     print("Hey")
 

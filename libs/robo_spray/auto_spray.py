@@ -1,6 +1,7 @@
 import json
 from scipy.spatial import KDTree
 from shapely.geometry import Point
+from geopy.distance import geodesic
 
 def load_geojson(geojson_file):
     with open('src/assets/spray_position_all.json') as file:
@@ -17,10 +18,9 @@ def match_gps_position(gps_position, kdtree, geojson_data):
     matched_feature = geojson_data['features'][index]
     return matched_feature
 
-def calc_utm_dist(loc1, loc2):
-    
-
-    return dist
+def calculate_utm_distance(lat1, lon1, lat2, lon2):
+    distance = geodesic((lat1, lon1), (lat2, lon2)).meters
+    return distance
 
 if __name__ == "__main__":
     # Example usage
@@ -41,3 +41,13 @@ if __name__ == "__main__":
     # You can access other properties based on your GeoJSON structure
 
     print(f'Matched feature name: {name}')
+
+
+    # Example usage
+    lat1 = 37.7750  # Latitude of location 1
+    lon1 = -122.4194  # Longitude of location 1
+    lat2 = 37.7749  # Latitude of location 2
+    lon2 = -122.4194  # Longitude of location 2
+
+    distance = calculate_utm_distance(lat1, lon1, lat2, lon2)
+    print("UTM Distance:", distance, "meters")

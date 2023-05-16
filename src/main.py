@@ -23,7 +23,7 @@ from farm_ng.service.service_client import ClientConfig
 from robo_spray.gps import GPS
 from robo_spray.can import make_amiga_spray1_proto
 from robo_spray.map import draw_markers,draw_tracks
-from robo_spray.auto_spray import build_kd_tree, match_gps_position
+from robo_spray.auto_spray import build_kd_tree, match_gps_position, calculate_utm_distance
 
 
 # Must come before kivy imports
@@ -60,8 +60,10 @@ class SprayApp(App):
         self.gps = GPS()
         self.geo:any = None
 
-        self.activate = 0
+        self.spray_activate = 0
         self.auto_spray_activate:bool = False
+
+        self.auto_spray_radious:float = 1.0
 
         with open('src/assets/spray_position_points.json') as file:
             self.spary_pos = json.load(file)
@@ -76,13 +78,13 @@ class SprayApp(App):
     def on_spray_btn(self) -> None:
         """Activates the spray by manually."""
         # Send Can signal
-        self.activate = 1
+        self.spray_activate = 1
         print("on")
 
     def off_spray_btn(self) -> None:
         """Deactivates the spray by manually."""
         # Send Can signal
-        self.activate = 0
+        self.spray_activate = 0
         print("off")
 
     def auto_spray_btn(self) -> None:
@@ -95,6 +97,10 @@ class SprayApp(App):
         else:
             print("Auto spray Off")
             self.auto_spray_activate = False
+
+            spary_btn:Button = self.root.ids["spary_btn_layout"]
+            spary_btn.state = "normal"
+            self.spray_activate = 0
             
         
 
@@ -195,6 +201,21 @@ class SprayApp(App):
                 # You can access other properties based on your GeoJSON structure
 
                 print(f'Matched feature name: {name}')
+
+                # Calc dist
+                dist = calculate_utm_distance(self.geo.lat,self.geo.lon,
+                                       matched_feature['geometry']['coordinates'][1],matched_feature['geometry']['coordinates'][0])
+                
+                btn:Button = self.root.ids["spary_btn_layout"]
+                if dist < self.auto_spray_radious:
+                    print("Spray!!")
+                    btn.state = "down"
+                    self.spray_activate = 1
+                else:
+                    btn.state = "normal"
+                    self.spray_activate = 0
+                    pass
+                
                 await asyncio.sleep(0.3)
 
             await asyncio.sleep(0.1)
@@ -302,10 +323,10 @@ class SprayApp(App):
 
         #joystick: VirtualJoystickWidget = self.root.ids["joystick"]
         while True:
-            print(f"self.activate:{self.activate}")
+            print(f"self.activate:{self.spray_activate}")
             msg: canbus_pb2.RawCanbusMessage = make_amiga_spray1_proto(
                 state_req=AmigaControlState.STATE_AUTO_ACTIVE,
-                activate=self.activate,
+                activate=self.spray_activate,
             )
             yield canbus_pb2.SendCanbusMessageRequest(message=msg)
             await asyncio.sleep(period)
