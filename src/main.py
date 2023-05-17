@@ -218,13 +218,14 @@ class SprayApp(App):
         while True:
             
             while self.auto_spray_activate:
-                gps_position = (self.geo.lon,self.geo.lat)
+                if self.geo:
+                    gps_position = (self.geo.lon,self.geo.lat)
 
-                # Build KD-Tree
-                kdtree = build_kd_tree(self.spary_pos)
+                    # Build KD-Tree
+                    kdtree = build_kd_tree(self.spary_pos)
 
-                # Match GPS position to GeoJSON feature
-                matched_feature = match_gps_position(gps_position, kdtree, self.spary_pos)
+                    # Match GPS position to GeoJSON feature
+                    matched_feature = match_gps_position(gps_position, kdtree, self.spary_pos)
 
                 # Access matched feature properties
                 name = matched_feature['properties']['name']
@@ -249,10 +250,8 @@ class SprayApp(App):
                         self.spray_activate = 1
                     print(f"Spray {condition}:{self.spray_activate}")
                 else:
-                    btn.state = "normal"
-                    self.spray_activate = 0
-                    pass
-                
+                    print("Wait for self.geo")
+                    
                 await asyncio.sleep(0.1)
 
             await asyncio.sleep(0.1)

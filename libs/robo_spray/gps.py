@@ -11,6 +11,9 @@ from fractions import Fraction
 import datetime
 import json
 
+import glob
+import subprocess
+
 def convert_to_dms(degrees):
     """
     Convert decimal degrees to degrees, minutes, and seconds format.
@@ -108,10 +111,36 @@ class ObjectFromDict:
     def __init__(self, **entries):
         self.__dict__.update(entries)
 
+def get_product_attribute(device_path):
+    command = ['udevadm', 'info', '-q', 'all', '-a', '-n', device_path]
+    output = subprocess.check_output(command, universal_newlines=True)
+    lines = output.splitlines()
+    for line in lines:
+        line = line.strip()
+        if line.startswith('ATTRS{product}'):
+            product = line.strip().split('==')[-1]
+            return product
+    return None
+
+def find_gps_device(gps_product="u-blox"):
+    devices = glob.glob('/dev/ttyACM*')
+    for device in devices:
+        
+        try:
+           product = get_product_attribute(device_path=device) 
+           if gps_product in product:
+                print(f"Found {product} on {device}")
+                return device
+        except IOError:
+            pass
+
+    return None
+
 class GPS:
     def __init__(self,update_ms=300,simulation=False):
         try:
-            self.gps_port = serial.Serial('/dev/ttyACM0', baudrate=38400, timeout=1)
+            device = find_gps_device()
+            self.gps_port = serial.Serial(device, baudrate=38400, timeout=1)
             self.gps = UbloxGps(self.gps_port)
         except Exception as e:
             print(e)
@@ -132,8 +161,9 @@ class GPS:
         self.geo:object = None
 
         # Dry run
-        self.update_gps()
-        _ = self.get_gps_data()
+        if 0:
+            self.update_gps()
+            _ = self.get_gps_data()
 
     def start(self):
         self.process = Process(target=self._run, args=())
@@ -245,11 +275,19 @@ class GPS:
         self.process.kill()
 
 if __name__ == "__main__":
+
+    # Usage
+    gps_device = find_gps_device()
+    if gps_device:
+        print(f"GPS device found: {gps_device}")
+    else:
+        print("No GPS device found.")
+        
     gps = GPS()
     gps.start()
     try: 
         while True:
-            time.sleep(1.0)
+            time.sleep(0.3)
             gps_data = gps.get_gps_data()
             if 1:
                 if gps_data is not None:
@@ -259,3 +297,5 @@ if __name__ == "__main__":
                     print("Heading of Motion: ", gps_data.headMot)
     except KeyboardInterrupt:
         gps.stop()
+
+
