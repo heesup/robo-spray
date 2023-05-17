@@ -22,14 +22,14 @@ from farm_ng.service.service_client import ClientConfig
 # Must come before kivy imports
 os.environ["KIVY_NO_ARGS"] = "1"
 
-# gui configs "must" go before any other kivy import. It includes other import from libs.
+# gui configs "must" go before any other kivy import. It includes other import from libs
 from kivy.config import Config  # noreorder # noqa: E402
 
 Config.set("graphics", "resizable", False)
 Config.set("graphics", "width", "1280")
 Config.set("graphics", "height", "800")
-Config.set("graphics", "fullscreen", True)
-Config.set("input", "mouse", "mouse,disable_on_activity")
+Config.set("graphics", "fullscreen", "false")
+Config.set("input", "mouse", "mouse,disable_on_activity, disable_multitouch")
 Config.set("kivy", "keyboard_mode", "systemanddock")
 
 # kivy imports
@@ -51,8 +51,6 @@ from robo_spray.auto_spray import build_kd_tree, match_gps_position, calculate_u
 
 import os
 this_path = os.path.dirname(__file__)
-
-
 
 class SprayApp(App):
     """Base class for the main Kivy app."""

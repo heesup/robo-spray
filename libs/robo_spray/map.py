@@ -61,12 +61,12 @@ def draw_tracks(mapview:MapView, data:dict) -> None:
 def draw_markers(mapview:MapView, data:dict) -> None:
 
 
-        
+    marker_path = os.path.join(dir_path,"../../src/assets/custom_marker.png")        
     # Add markers to the MapView 
     for feature in data['features']:
         coordinates = feature['geometry']['coordinates']
         marker = MapMarker(lat=coordinates[1], lon=coordinates[0],
-                           source="/data/home/amiga/apps/robo-spray/src/assets/custom_marker.png")
+                           source=marker_path)
         #marker = MapMarker(lat=coordinates[1], lon=coordinates[0])
         #marker.add_widget(Label(text=feature["properties"]["Name"]))
         #marker.add_widget(Button(text=feature["properties"]["Name"]))
