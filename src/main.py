@@ -35,8 +35,8 @@ from kivy.config import Config  # noreorder # noqa: E402
 Config.set("graphics", "resizable", False)
 Config.set("graphics", "width", "1280")
 Config.set("graphics", "height", "800")
-Config.set("graphics", "fullscreen", "false")
-Config.set("input", "mouse", "mouse,disable_on_activity, disable_multitouch")
+Config.set("graphics", "fullscreen", True)
+Config.set("input", "mouse", "mouse,disable_on_activity")
 Config.set("kivy", "keyboard_mode", "systemanddock")
 
 # kivy imports
@@ -45,6 +45,8 @@ from kivy.lang.builder import Builder  # noqa: E402
 from kivy_garden.mapview.geojson import GeoJsonMapLayer
 from kivy_garden.mapview import MapMarker, MapView
 from kivy.uix.button import Button
+
+
 
 class SprayApp(App):
     """Base class for the main Kivy app."""
@@ -65,10 +67,10 @@ class SprayApp(App):
 
         self.auto_spray_radious:float = 1.0
 
-        with open('src/assets/spray_position_points.json') as file:
+        with open('/data/home/amiga/apps/robo-spray/src/assets/spray_position_points.json') as file:
             self.spary_pos = json.load(file)
 
-        with open('src/assets/spray_position_all.json') as file:
+        with open('/data/home/amiga/apps/robo-spray/src/assets/spray_position_all.json') as file:
             self.spary_track = json.load(file)
                 
 
