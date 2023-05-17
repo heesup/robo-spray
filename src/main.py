@@ -19,17 +19,10 @@ from farm_ng.oak.camera_client import OakCameraClient
 from farm_ng.service import service_pb2
 from farm_ng.service.service_client import ClientConfig
 
-# import internal libs
-from robo_spray.gps import GPS
-from robo_spray.can import make_amiga_spray1_proto
-from robo_spray.map import draw_markers,draw_tracks
-from robo_spray.auto_spray import build_kd_tree, match_gps_position, calculate_utm_distance
-
-
 # Must come before kivy imports
 os.environ["KIVY_NO_ARGS"] = "1"
 
-# gui configs must go before any other kivy import
+# gui configs "must" go before any other kivy import. It includes other import from libs.
 from kivy.config import Config  # noreorder # noqa: E402
 
 Config.set("graphics", "resizable", False)
@@ -45,6 +38,19 @@ from kivy.lang.builder import Builder  # noqa: E402
 from kivy_garden.mapview.geojson import GeoJsonMapLayer
 from kivy_garden.mapview import MapMarker, MapView
 from kivy.uix.button import Button
+from kivy.uix.dropdown import DropDown
+from kivy.graphics import Color, Ellipse
+
+
+# import internal libs
+from robo_spray.gps import GPS
+from robo_spray.can import make_amiga_spray1_proto
+from robo_spray.map import draw_markers,draw_tracks
+from robo_spray.auto_spray import build_kd_tree, match_gps_position, calculate_utm_distance
+
+
+import os
+this_path = os.path.dirname(__file__)
 
 class SprayApp(App):
     """Base class for the main Kivy app."""
@@ -65,13 +71,14 @@ class SprayApp(App):
 
         self.auto_spray_radious:float = 1.0
 
-        with open('src/assets/spray_position_points.json') as file:
+        with open(os.path.join(this_path,"assets/spray_position_points.json")) as file:
             self.spary_pos = json.load(file)
 
-        with open('src/assets/spray_position_all.json') as file:
+        with open(os.path.join(this_path,"assets/spray_position_all.json")) as file:
             self.spary_track = json.load(file)
                 
 
+        
     def build(self):
         return Builder.load_file("res/main.kv")
 
@@ -87,6 +94,21 @@ class SprayApp(App):
         self.spray_activate = 0
         print("off")
 
+    def drwaw_circle(self) -> None:
+        # with self.mapview.canvas:
+        #     # Set the fill color
+        #     Color(1, 0, 0, 0.5)
+        #     # Draw a circle using Ellipse
+        #     radius = 100
+        #     self.ellipse = Ellipse(pos=(self.mapview.center_x-radius/2, self.mapview.center_y-radius/2),
+        #             size=(radius, radius))
+        pass
+            
+    def clear_circle(self) -> None:
+        with self.mapview.canvas:
+            self.mapview.canvas.remove(self.ellipse)
+            self.ellipse = None
+
     def auto_spray_btn(self) -> None:
         """Activates the auto spray """
         btn:Button = self.root.ids["auto_spary_btn_layout"]
@@ -94,6 +116,7 @@ class SprayApp(App):
         if self.auto_spray_activate == False:
             print("Auto spray On")
             self.auto_spray_activate = True
+            # self.drwaw_circle()
         else:
             print("Auto spray Off")
             self.auto_spray_activate = False
@@ -101,6 +124,7 @@ class SprayApp(App):
             spary_btn:Button = self.root.ids["spary_btn_layout"]
             spary_btn.state = "normal"
             self.spray_activate = 0
+            # self.clear_circle()
             
         
 
@@ -154,7 +178,7 @@ class SprayApp(App):
         while True:
             # Get GPS data
             self.geo = self.gps.get_gps_data()
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(0.1)
 
     async def display_map_function(self) -> None:
         """Placeholder forever loop."""
@@ -178,7 +202,10 @@ class SprayApp(App):
                 mapview_marker.lat = self.geo.lat
                 mapview_marker.lon = self.geo.lon
 
-            await asyncio.sleep(1.0)
+
+
+
+            await asyncio.sleep(0.5)
 
     async def auto_spray(self) -> None:
         """Placeholder forever loop."""
@@ -216,7 +243,7 @@ class SprayApp(App):
                     self.spray_activate = 0
                     pass
                 
-                await asyncio.sleep(0.3)
+                await asyncio.sleep(0.1)
 
             await asyncio.sleep(0.1)
 
@@ -331,7 +358,9 @@ class SprayApp(App):
             yield canbus_pb2.SendCanbusMessageRequest(message=msg)
             await asyncio.sleep(period)
 
-            
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="template-app")
 

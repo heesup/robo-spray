@@ -1,5 +1,17 @@
 #:import sys sys
 #:import MapSource kivy_garden.mapview.MapSource
+<CircleMarker@MapMarker>:
+    size_hint: None, None
+    size: self.radius * 2, self.radius * 2
+    pos: self.lat - self.radius, self.lon - self.radius
+    canvas:
+        Color:
+            rgba: self.color
+        Ellipse:
+            pos: self.lat - self.radius, self.lon - self.radius
+            size: self.radius * 2, self.radius * 2
+
+
 RelativeLayout:
     BoxLayout:
         orientation: 'vertical'
@@ -52,6 +64,7 @@ RelativeLayout:
                     pos: self.parent.pos
                     size: self.parent.size
 
+
             ToggleButton:
                 id: auto_spary_btn_layout
                 pos_hint: {"x": 0.0, "top": 1.0}
@@ -63,9 +76,6 @@ RelativeLayout:
                     source: "assets/off_switch.png" if self.parent.state == "normal" else "assets/on_switch.png"
                     pos: self.parent.pos
                     size: self.parent.size
-        # Label:
-        #     id: counter_label
-        #     text: "Tic: 0"
-        #     font_size: 40
+
 
 

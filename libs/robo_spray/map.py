@@ -10,6 +10,9 @@ from kivy.uix.floatlayout import FloatLayout
 
 import numpy as np
 
+import os
+dir_path = os.path.dirname(__file__)
+
 class SparyMapMarker(MapMarker):
     def __init__(self, **kwargs):
         super(SparyMapMarker, self).__init__(**kwargs)
@@ -25,7 +28,7 @@ class SparyMapMarker(MapMarker):
 
 class CircleMarker(MapMarker):
     def __init__(self, lat, lon, radius, **kwargs):
-        super(CircleMarker, self).__init__(lat=lat, lon=lon, **kwargs)
+        super(CircleMarker, self).__init__(lat=lat, lon=lon,radius=radius, **kwargs)
         self.radius = radius
 
     def add_canvas(self):
@@ -43,11 +46,11 @@ def marker_function():
 
 def draw_tracks(mapview:MapView, data:dict) -> None:
 
-
+    marker_path = os.path.join(dir_path,"../../src/assets/path_marker.png")
     # Add markers to the MapView 
     for feature in data['features']:
         coordinates = feature['geometry']['coordinates']
-        marker = MapMarker(lat=coordinates[1], lon=coordinates[0],source="src/assets/path_marker.png",size=(50,50))
+        marker = MapMarker(lat=coordinates[1], lon=coordinates[0],source=marker_path,size=(50,50))
         #marker = MapMarker(lat=coordinates[1], lon=coordinates[0])
         #marker.add_widget(Label(text=feature["properties"]["Name"]))
         #marker.add_widget(Button(text=feature["properties"]["Name"]))
