@@ -45,7 +45,7 @@ from kivy.graphics import Color, Ellipse
 # import internal libs
 from robo_spray.gps import GPS
 from robo_spray.can import make_amiga_spray1_proto
-from robo_spray.map import draw_markers,draw_tracks
+from robo_spray.map import draw_markers, draw_tracks, remove_markers
 from robo_spray.auto_spray import build_kd_tree, match_gps_position, calculate_utm_distance
 
 
@@ -70,6 +70,8 @@ class SprayApp(App):
         self.auto_spray_activate:bool = False
 
         self.auto_spray_radious:float = 1.0
+
+        self.markers:List[MapMarker] = []
 
         with open(os.path.join(this_path,"assets/spray_position_points.json")) as file:
             self.spary_pos = json.load(file)
@@ -117,6 +119,8 @@ class SprayApp(App):
             print("Auto spray On")
             self.auto_spray_activate = True
             # self.drwaw_circle()
+            # draw_tracks(mapview=self.mapview,data=self.spary_track)
+            self.markers = draw_markers(mapview=self.mapview,data=self.spary_pos)
         else:
             print("Auto spray Off")
             self.auto_spray_activate = False
@@ -125,6 +129,9 @@ class SprayApp(App):
             spary_btn.state = "normal"
             self.spray_activate = 0
             # self.clear_circle()
+
+            remove_markers(self.mapview, self.markers)
+            
             
         
 
@@ -187,10 +194,6 @@ class SprayApp(App):
 
         self.mapview:MapView = self.root.ids["mapview"]
 
-        # draw_tracks(mapview=self.mapview,data=self.spary_track)
-        draw_markers(mapview=self.mapview,data=self.spary_pos)
-
-
         while True:
             
             if self.geo:
@@ -226,8 +229,8 @@ class SprayApp(App):
                 # Access matched feature properties
                 name = matched_feature['properties']['name']
                 # You can access other properties based on your GeoJSON structure
-
-                print(f'Matched feature name: {name}')
+                condition = matched_feature['properties']['condition']
+                # print(f'Matched feature name: {name}')
 
                 # Calc dist
                 dist = calculate_utm_distance(self.geo.lat,self.geo.lon,
@@ -235,9 +238,16 @@ class SprayApp(App):
                 
                 btn:Button = self.root.ids["spary_btn_layout"]
                 if dist < self.auto_spray_radious:
-                    print("Spray!!")
                     btn.state = "down"
-                    self.spray_activate = 1
+                    if condition == "high":
+                        self.spray_activate = 3
+                    elif condition == "med":
+                        self.spray_activate = 2
+                    elif condition == "low":
+                        self.spray_activate = 1
+                    else:
+                        self.spray_activate = 1
+                    print(f"Spray {condition}:{self.spray_activate}")
                 else:
                     btn.state = "normal"
                     self.spray_activate = 0

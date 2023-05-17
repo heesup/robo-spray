@@ -1,4 +1,5 @@
 import json
+from typing import List
 
 from kivy.app import App
 from kivy_garden.mapview import MapView, MapMarker
@@ -58,13 +59,17 @@ def draw_tracks(mapview:MapView, data:dict) -> None:
         # mapview.add_marker(marker)
         mapview.add_widget(marker)
 
-def draw_markers(mapview:MapView, data:dict) -> None:
+def draw_markers(mapview:MapView, data:dict) -> List[MapMarker]:
 
-
-    marker_path = os.path.join(dir_path,"../../src/assets/custom_marker.png")        
+    markers = []
+    
     # Add markers to the MapView 
     for feature in data['features']:
         coordinates = feature['geometry']['coordinates']
+
+        condition = feature["properties"]["condition"]
+
+        marker_path = os.path.join(dir_path,f"../../src/assets/{condition}.png")        
         marker = MapMarker(lat=coordinates[1], lon=coordinates[0],
                            source=marker_path)
         #marker = MapMarker(lat=coordinates[1], lon=coordinates[0])
@@ -73,6 +78,14 @@ def draw_markers(mapview:MapView, data:dict) -> None:
        
         # mapview.add_marker(marker)
         mapview.add_widget(marker)
+
+        markers.append(marker)
+
+    return markers
+
+def remove_markers(mapview:MapView,markers:List[MapMarker]) -> None:
+    for marker in markers:
+        mapview.remove_marker(marker)
 
 
 
