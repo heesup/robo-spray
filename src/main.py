@@ -215,34 +215,37 @@ class SprayApp(App):
         while True:
             
             while self.auto_spray_activate:
-                gps_position = (self.geo.lon,self.geo.lat)
+                if self.geo:
+                    gps_position = (self.geo.lon,self.geo.lat)
 
-                # Build KD-Tree
-                kdtree = build_kd_tree(self.spary_pos)
+                    # Build KD-Tree
+                    kdtree = build_kd_tree(self.spary_pos)
 
-                # Match GPS position to GeoJSON feature
-                matched_feature = match_gps_position(gps_position, kdtree, self.spary_pos)
+                    # Match GPS position to GeoJSON feature
+                    matched_feature = match_gps_position(gps_position, kdtree, self.spary_pos)
 
-                # Access matched feature properties
-                name = matched_feature['properties']['name']
-                # You can access other properties based on your GeoJSON structure
+                    # Access matched feature properties
+                    name = matched_feature['properties']['name']
+                    # You can access other properties based on your GeoJSON structure
 
-                print(f'Matched feature name: {name}')
+                    print(f'Matched feature name: {name}')
 
-                # Calc dist
-                dist = calculate_utm_distance(self.geo.lat,self.geo.lon,
-                                       matched_feature['geometry']['coordinates'][1],matched_feature['geometry']['coordinates'][0])
-                
-                btn:Button = self.root.ids["spary_btn_layout"]
-                if dist < self.auto_spray_radious:
-                    print("Spray!!")
-                    btn.state = "down"
-                    self.spray_activate = 1
+                    # Calc dist
+                    dist = calculate_utm_distance(self.geo.lat,self.geo.lon,
+                                        matched_feature['geometry']['coordinates'][1],matched_feature['geometry']['coordinates'][0])
+                    
+                    btn:Button = self.root.ids["spary_btn_layout"]
+                    if dist < self.auto_spray_radious:
+                        print("Spray!!")
+                        btn.state = "down"
+                        self.spray_activate = 1
+                    else:
+                        btn.state = "normal"
+                        self.spray_activate = 0
+                        pass
                 else:
-                    btn.state = "normal"
-                    self.spray_activate = 0
-                    pass
-                
+                    print("Wait for self.geo")
+                    
                 await asyncio.sleep(0.1)
 
             await asyncio.sleep(0.1)
