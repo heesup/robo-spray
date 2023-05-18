@@ -52,15 +52,15 @@ RelativeLayout:
 
             Button:
                 id: spary_btn_layout
-                pos_hint: {"x": 0.0, "top": 1.0}
+                pos_hint: {"x": 0.0, "top": 0.9}
                 background_color: 0, 0, 0, 0
-                # size_hint: 0.1, 0.1
-                text: "Spray"
+                size_hint: 0.8, 0.8
+                # text: "Spray"
                 # background_normal: "assets/button.webp"
                 on_press: app.on_spray_btn()
                 on_release: app.off_spray_btn()
                 Image:
-                    source: "assets/spray_button_normal.webp" if self.parent.state == "normal" else "assets/spray_button_normal_down.png"
+                    source: "assets/spray_button_normal.png" if self.parent.state == "normal" else "assets/spray_button_normal_down.png"
                     pos: self.parent.pos
                     size: self.parent.size
 

@@ -227,28 +227,29 @@ class SprayApp(App):
                     # Match GPS position to GeoJSON feature
                     matched_feature = match_gps_position(gps_position, kdtree, self.spary_pos)
 
-                # Access matched feature properties
-                name = matched_feature['properties']['name']
-                # You can access other properties based on your GeoJSON structure
-                condition = matched_feature['properties']['condition']
-                # print(f'Matched feature name: {name}')
+                    # Access matched feature properties
+                    name = matched_feature['properties']['name']
+                    # You can access other properties based on your GeoJSON structure
+                    condition = matched_feature['properties']['condition']
+                    # print(f'Matched feature name: {name}')
 
-                # Calc dist
-                dist = calculate_utm_distance(self.geo.lat,self.geo.lon,
-                                       matched_feature['geometry']['coordinates'][1],matched_feature['geometry']['coordinates'][0])
-                
-                btn:Button = self.root.ids["spary_btn_layout"]
-                if dist < self.auto_spray_radious:
-                    btn.state = "down"
-                    if condition == "high":
-                        self.spray_activate = 3
-                    elif condition == "med":
-                        self.spray_activate = 2
-                    elif condition == "low":
-                        self.spray_activate = 1
-                    else:
-                        self.spray_activate = 1
-                    print(f"Spray {condition}:{self.spray_activate}")
+                    # Calc dist
+                    dist = calculate_utm_distance(self.geo.lat,self.geo.lon,
+                                        matched_feature['geometry']['coordinates'][1],matched_feature['geometry']['coordinates'][0])
+                    
+                    btn:Button = self.root.ids["spary_btn_layout"]
+                    if dist < self.auto_spray_radious:
+                        
+                        btn.state = "down"
+                        if condition == "high":
+                            self.spray_activate = 3
+                        elif condition == "med":
+                            self.spray_activate = 2
+                        elif condition == "low":
+                            self.spray_activate = 1
+                        else:
+                            self.spray_activate = 1
+                        print(f"Spray {condition}:{self.spray_activate}")
                 else:
                     print("Wait for self.geo")
                     
