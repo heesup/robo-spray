@@ -5,6 +5,7 @@ import os
 from typing import List
 from typing import Optional
 import json
+import time
 
 # import farm_ng libs
 import grpc
@@ -73,6 +74,10 @@ class SprayApp(App):
 
         self.markers:List[MapMarker] = []
 
+        self.spray_pos_id = ""
+
+        self.spray_start_time = 0
+
         with open(os.path.join(this_path,"assets/spray_position_points.json")) as file:
             self.spary_pos = json.load(file)
 
@@ -115,6 +120,7 @@ class SprayApp(App):
         """Activates the auto spray """
         btn:Button = self.root.ids["auto_spary_btn_layout"]
         print(btn.state)
+        self.spray_pos_id = ""
         if self.auto_spray_activate == False:
             print("Auto spray On")
             self.auto_spray_activate = True
@@ -133,11 +139,6 @@ class SprayApp(App):
             remove_markers(self.mapview, self.markers)
             
             
-        
-
-        
-
-
     def on_exit_btn(self) -> None:
         """Kills the running kivy application."""
         self.gps.stop()
@@ -238,8 +239,12 @@ class SprayApp(App):
                                         matched_feature['geometry']['coordinates'][1],matched_feature['geometry']['coordinates'][0])
                     
                     btn:Button = self.root.ids["spary_btn_layout"]
-                    if dist < self.auto_spray_radious:
-                        
+                    # If the dist is closer than spray radious and new id
+                    # Activate the sprayer once
+                    if dist < self.auto_spray_radious and self.spray_pos_id != name:
+                        self.spray_pos_id = name
+                        # Start timer
+                        self.spray_start_time = time.time()
                         btn.state = "down"
                         if condition == "high":
                             self.spray_activate = 3
@@ -250,6 +255,13 @@ class SprayApp(App):
                         else:
                             self.spray_activate = 1
                         print(f"Spray {condition}:{self.spray_activate}")
+
+                    curr_time = time.time()
+
+                    if curr_time - self.spray_start_time > self.spray_activate:
+                        btn.state = "normal"
+                        self.spray_activate = 0
+                        # print(f"Spray {condition}:{self.spray_activate}")
                 else:
                     print("Wait for self.geo")
                     
