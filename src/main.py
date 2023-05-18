@@ -91,14 +91,19 @@ class SprayApp(App):
 
     def on_spray_btn(self) -> None:
         """Activates the spray by manually."""
-        # Send Can signal
-        self.spray_activate = 1
+        if self.auto_spray_activate == False:
+            # Send Can signal
+            self.spray_activate = 1
+            spary_btn:Button = self.root.ids["spray_btn_layout"]
+            spary_btn.state = "normal"
         print("on")
 
     def off_spray_btn(self) -> None:
         """Deactivates the spray by manually."""
-        # Send Can signal
-        self.spray_activate = 0
+        if self.auto_spray_activate == False:    
+            # Send Can signal
+            self.spray_activate = 0
+
         print("off")
 
     def drwaw_circle(self) -> None:
@@ -118,7 +123,7 @@ class SprayApp(App):
 
     def auto_spray_btn(self) -> None:
         """Activates the auto spray """
-        btn:Button = self.root.ids["auto_spary_btn_layout"]
+        btn:Button = self.root.ids["auto_spray_btn_layout"]
         print(btn.state)
         self.spray_pos_id = ""
         if self.auto_spray_activate == False:
@@ -131,7 +136,7 @@ class SprayApp(App):
             print("Auto spray Off")
             self.auto_spray_activate = False
 
-            spary_btn:Button = self.root.ids["spary_btn_layout"]
+            spary_btn:Button = self.root.ids["spray_btn_layout"]
             spary_btn.state = "normal"
             self.spray_activate = 0
             # self.clear_circle()
@@ -238,7 +243,7 @@ class SprayApp(App):
                     dist = calculate_utm_distance(self.geo.lat,self.geo.lon,
                                         matched_feature['geometry']['coordinates'][1],matched_feature['geometry']['coordinates'][0])
                     
-                    btn:Button = self.root.ids["spary_btn_layout"]
+                    btn:Button = self.root.ids["spray_btn_layout"]
                     # If the dist is closer than spray radious and new id
                     # Activate the sprayer once
                     if dist < self.auto_spray_radious and self.spray_pos_id != name:
