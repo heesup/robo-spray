@@ -372,7 +372,7 @@ class SprayApp(App):
 
         #joystick: VirtualJoystickWidget = self.root.ids["joystick"]
         while True:
-            print(f"self.activate:{self.spray_activate}")
+            # print(f"self.activate:{self.spray_activate}")
             msg: canbus_pb2.RawCanbusMessage = make_amiga_spray1_proto(
                 state_req=AmigaControlState.STATE_AUTO_ACTIVE,
                 activate=self.spray_activate,
