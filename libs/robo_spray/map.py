@@ -12,7 +12,7 @@ from kivy.uix.floatlayout import FloatLayout
 import numpy as np
 
 import os
-dir_path = os.path.dirname(__file__)
+assets_path = os.path.join(os.path.dirname(__file__),"../../src/assets/")
 
 class SparyMapMarker(MapMarker):
     def __init__(self, **kwargs):
@@ -47,16 +47,11 @@ def marker_function():
 
 def draw_tracks(mapview:MapView, data:dict) -> None:
 
-    marker_path = os.path.join(dir_path,"../../src/assets/path_marker.png")
+    marker_path = os.path.join(assets_path,"path_marker.png")
     # Add markers to the MapView 
     for feature in data['features']:
         coordinates = feature['geometry']['coordinates']
         marker = MapMarker(lat=coordinates[1], lon=coordinates[0],source=marker_path,size=(50,50))
-        #marker = MapMarker(lat=coordinates[1], lon=coordinates[0])
-        #marker.add_widget(Label(text=feature["properties"]["Name"]))
-        #marker.add_widget(Button(text=feature["properties"]["Name"]))
-       
-        # mapview.add_marker(marker)
         mapview.add_widget(marker)
 
 def draw_markers(mapview:MapView, data:dict) -> List[MapMarker]:
@@ -69,7 +64,7 @@ def draw_markers(mapview:MapView, data:dict) -> List[MapMarker]:
 
         condition = feature["properties"]["condition"]
 
-        marker_path = os.path.join(dir_path,f"../../src/assets/{condition}.png")        
+        marker_path = os.path.join(assets_path,f"{condition}.png")        
         marker = MapMarker(lat=coordinates[1], lon=coordinates[0],
                            source=marker_path)
         #marker = MapMarker(lat=coordinates[1], lon=coordinates[0])

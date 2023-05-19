@@ -64,13 +64,13 @@ class SprayApp(App):
 
         self.async_tasks: List[asyncio.Task] = []
 
-        self.gps = GPS()
+        self.gps = GPS(simulation=False)
         self.geo:any = None
 
         self.spray_activate = 0
         self.auto_spray_activate:bool = False
 
-        self.auto_spray_radious:float = 1.0
+        self.auto_spray_radious:float = 3.0
 
         self.markers:List[MapMarker] = []
 
@@ -91,19 +91,15 @@ class SprayApp(App):
 
     def on_spray_btn(self) -> None:
         """Activates the spray by manually."""
-        if self.auto_spray_activate == False:
-            # Send Can signal
-            self.spray_activate = 1
-            spary_btn:Button = self.root.ids["spray_btn_layout"]
-            spary_btn.state = "normal"
+
+        # Send Can signal
+        self.spray_activate = 1
         print("on")
 
     def off_spray_btn(self) -> None:
         """Deactivates the spray by manually."""
-        if self.auto_spray_activate == False:    
-            # Send Can signal
-            self.spray_activate = 0
-
+        # Send Can signal
+        self.spray_activate = 0
         print("off")
 
     def drwaw_circle(self) -> None:

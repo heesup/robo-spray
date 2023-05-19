@@ -13,6 +13,9 @@ import json
 
 import glob
 import subprocess
+import os
+
+assets_path = os.path.join(os.path.dirname(__file__),"../../src/assets/")
 
 def convert_to_dms(degrees):
     """
@@ -176,7 +179,7 @@ class GPS:
             print("Running GPS simulation mode")
             
             # Runing GPS Simulation
-            with open('src/assets/spray_position_all.json') as file:
+            with open(os.path.join(assets_path,'spray_position_all.json')) as file:
                 data = json.load(file)
                     # Add markers to the MapView 
             sorted_features = sorted(data['features'], key=lambda feature: feature['properties']['name'])
